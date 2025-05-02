@@ -1,0 +1,242 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Sentiment Analysis</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #E0E0E0;
+            overflow-x: hidden;
+        }
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1F1B24;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+        .navbar h1 {
+            color: #FF4081;
+            transition: transform 0.3s;
+        }
+        .navbar h1:hover {
+            transform: scale(1.1);
+        }
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+            margin-left: auto;
+            margin-right: 40px;
+        }
+        .navbar ul li a {
+            color: #E0E0E0;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+        .navbar ul li a:hover {
+            color: #FF4081;
+        }
+        .hero {
+            text-align: center;
+            padding: 100px 20px 80px;
+            background: linear-gradient(135deg, #250042, #7A0040);
+            color: #FFF;
+            border-radius: 0 0 50% 50% / 10%;
+            animation: fadeIn 1s ease-in-out;
+        }
+        .hero h2 {
+            font-size: 2.5rem;
+            animation: slideIn 1s ease-in-out;
+        }
+        .carousel-container {
+            width: 80%;
+            margin: auto;
+            overflow: hidden;
+            position: relative;
+            padding: 40px 0;
+        }
+        .carousel {
+            display: flex;
+            transition: transform 0.5s ease-in-out;
+        }
+        .carousel img {
+            width: 200px;
+            height: 300px;
+            margin: 0 10px;
+            border-radius: 10px;
+            box-shadow: 0px 0px 10px rgba(255, 64, 129, 0.3);
+        }
+        .features {
+            text-align: center;
+            padding: 50px 20px;
+            background: #1F1B24;
+            color: #FFF;
+        }
+        .features h3 {
+            font-size: 2rem;
+            margin-bottom: 20px;
+        }
+        .features-grid {
+            display: flex;
+            justify-content: center;
+            gap: 40px;
+            flex-wrap: wrap;
+        }
+        .feature-item {
+            padding: 20px;
+            background: #29242E;  /* Dark color for the box */
+            border-radius: 10px;
+            font-size: 1rem;
+            font-weight: normal;
+            box-shadow: 0px 0px 10px rgba(255, 64, 129, 0.3);
+            color: #E0E0E0;  /* Light text color */
+            text-align: center;
+            width: 250px; /* Consistent width for better alignment */
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .feature-item h4 {
+            color: #FF4081; /* Highlighting headings in pink */
+            margin-bottom: 10px;
+        }
+        .feature-item p {
+            font-size: 0.95rem;
+            line-height: 1.6; /* More line spacing for better readability */
+            padding: 0 10px; /* Some padding to prevent text from touching edges */
+        }
+
+        /* Hover Effect */
+        .feature-item:hover {
+            transform: scale(1.05); /* Slightly enlarges the box */
+            box-shadow: 0px 0px 15px rgba(255, 64, 129, 0.5); /* Adds a glowing effect */
+        }
+
+        .review-cta {
+            text-align: center;
+            padding: 40px;
+            background: #1F1B24;
+            margin: 40px auto;
+            border-radius: 10px 10px 50% 50% / 10%;
+            width: 60%;
+            box-shadow: 0px 0px 20px rgba(103, 58, 183, 0.4);
+        }
+
+        .review-button {
+            padding: 12px 25px;
+            background: #FF4081;
+            color: #FFF;
+            text-decoration: none;
+            font-weight: bold;
+            border-radius: 5px;
+            display: inline-block;
+            transition: 0.3s;
+        }
+        .review-button:hover {
+            background: #673AB7;
+            color: #FFF;
+            box-shadow: 0px 0px 15px rgba(255, 64, 129, 0.5);
+        }
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #1F1B24;
+            border-top: 3px solid #FF4081;
+            margin-top: 40px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar">
+        <h1>Movie Sentiment Analyzer</h1>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="review.html">Review a Movie</a></li>
+        </ul>
+    </nav>
+    
+    <header class="hero">
+        <br></br>
+        <h2>Discover Movie Sentiments with AI</h2>
+        <p><i>We analyze movie reviews to generate sentiment-based ratings.</i></p>
+    </header>
+    
+    <section class="carousel-container">
+        <h3 style="text-align: center;">Popular Movies</h3>
+        <br>
+        <div class="carousel" id="movieCarousel">
+            <img src="https://image.tmdb.org/t/p/w200/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg" alt="Interstellar">
+            <img src="https://image.tmdb.org/t/p/w200/qJ2tW6WMUDux911r6m7haRef0WH.jpg" alt="The Dark Knight">
+            <img src="https://image.tmdb.org/t/p/w200/or06FN3Dka5tukK1e9sl16pB3iy.jpg" alt="Avengers: Endgame">
+            <img src="https://image.tmdb.org/t/p/w200/kyeqWdyUXW608qlYkRqosgbbJyK.jpg" alt="Avatar">
+            <img src="https://image.tmdb.org/t/p/w200/3bhkrj58Vtu7enYsRolD1fZdja1.jpg" alt="The Godfather">
+            <img src="https://image.tmdb.org/t/p/w200/udDclJoHjfjb8Ekgsd4FDteOkCU.jpg" alt="Joker">
+            <img src="https://image.tmdb.org/t/p/w200/7IiTTgloJzvGI1TAYymCfbfl3vT.jpg" alt="Parasite">
+            <img src="https://image.tmdb.org/t/p/w200/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg" alt="The Shawshank Redemption">
+            <img src="https://image.tmdb.org/t/p/w200/edv5CZvWj09upOsy2Y6IwDhK8bt.jpg" alt="Inception">
+            <img src="https://image.tmdb.org/t/p/w200/a26cQPRhJPX6GbWfQbvZdrrp9j9.jpg" alt="Fight Club">
+            <img src="https://image.tmdb.org/t/p/w200/vfrQk5IPloGg1v9Rzbh2Eg3VGyM.jpg" alt="The Matrix">
+        </div>
+        
+    </section>
+
+    <section class="features">
+        <h3>What We Offer</h3>
+        <br>
+        <div class="features-grid">
+            <div class="feature-item">
+                <h4>Sentiment Analysis</h4>
+                <p>Our AI-powered tool analyzes user reviews to determine the overall sentiment—positive, neutral, or negative.</p>
+            </div>
+            <div class="feature-item">
+                <h4>AI-Generated Ratings</h4>
+                <p>Based on sentiment analysis, we generate accurate ratings out of 5 stars, providing an objective measure of review sentiment.</p>
+            </div>
+            <div class="feature-item">
+                <h4>Movie Trends</h4>
+                <p>Stay updated with the latest trends in movie ratings and audience opinions across different genres.</p>
+            </div>
+            <div class="feature-item">
+                <h4>User Reviews</h4>
+                <p>Read and analyze real audience reviews to understand diverse perspectives on your favorite movies.</p>
+            </div>
+        </div>
+    </section>    
+    
+    <section class="review-cta">
+        <p>Want to analyze your favorite movie review?</p>
+        <a href="review.html" class="review-button">Write a Review</a>
+    </section>
+    
+    <footer>
+        <p>&copy; 2025 Movie Sentiment Analyzer | All Rights Reserved</p>
+    </footer>
+    
+    <script>
+        let carousel = document.getElementById('movieCarousel');
+        let scrollAmount = 0;
+        function scrollCarousel() {
+            if (scrollAmount >= carousel.scrollWidth - carousel.clientWidth) {
+                scrollAmount = 0;
+            } else {
+                scrollAmount += 220;
+            }
+            carousel.style.transform = `translateX(-${scrollAmount}px)`;
+        }
+        setInterval(scrollCarousel, 2000);
+    </script>
+</body>
+</html>

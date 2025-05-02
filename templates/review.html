@@ -1,0 +1,202 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Sentiment Analyzer</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='styles.css') }}">
+
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            margin: 0;
+            padding: 0;
+            background-color: #121212;
+            color: #E0E0E0;
+            overflow-x: hidden;
+        }
+
+        .navbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #1F1B24;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+            position: fixed;
+            width: 100%;
+            top: 0;
+            z-index: 1000;
+        }
+
+        .navbar h1 {
+            color: #FF4081;
+            transition: transform 0.3s;
+        }
+
+        .navbar h1:hover {
+            transform: scale(1.1);
+        }
+
+        .navbar ul {
+            list-style: none;
+            display: flex;
+            gap: 25px;
+            margin-left: auto;
+            margin-right: 40px;
+        }
+
+        .navbar ul li a {
+            color: #E0E0E0;
+            text-decoration: none;
+            font-weight: bold;
+            transition: 0.3s;
+        }
+
+        .navbar ul li a:hover {
+            color: #FF4081;
+        }
+
+        .review-container {
+            text-align: center;
+            padding: 50px;
+            margin-top: 100px;
+            max-width: 800px;
+            margin: auto;
+            background: #1F1B24;
+            border-radius: 10px;
+            box-shadow: 0px 0px 15px rgba(255, 64, 129, 0.3);
+        }
+
+        .dropdown {
+            width: 100%;
+            padding: 12px;
+            background: #1F1B24;
+            color: #E0E0E0;
+            border-radius: 5px;
+            border: 2px solid #FF4081;
+            font-size: 1.1rem;
+            margin-top: 20px;
+        }
+
+        .dropdown option {
+            background: #1F1B24;
+            color: #E0E0E0;
+        }
+
+        .review-input {
+            width: 100%;
+            height: 100px;
+            padding: 10px;
+            margin-top: 20px;
+            border-radius: 5px;
+            border: 2px solid #FF4081;
+            background: #1F1B24;
+            color: #E0E0E0;
+            font-size: 1rem;
+        }
+
+        .submit-button {
+            margin-top: 20px;
+            padding: 12px 25px;
+            background: #FF4081;
+            color: #FFF;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-button:hover {
+            background: #673AB7;
+        }
+
+        footer {
+            text-align: center;
+            padding: 20px;
+            background: #1F1B24;
+            border-top: 3px solid #FF4081;
+            margin-top: 30px;
+        }
+    </style>
+</head>
+
+<body>
+    <nav class="navbar">
+        <h1>Movie Sentiment Analyzer</h1>
+        <ul>
+            <li><a href="index.html">Home</a></li>
+            <li><a href="review.html">Review a Movie</a></li>
+        </ul>
+    </nav>
+
+    <section class="review-container">
+        <h2>Write or Select a Movie for Review</h2>
+
+        <label for="movieSelect">Select a Movie:</label>
+        <select id="movieSelect" class="dropdown" onchange="toggleManualEntry()">
+            <option value="">Select a Movie</option>
+            <option value="Interstellar">Interstellar</option>
+            <option value="The Dark Knight">The Dark Knight</option>
+            <option value="Avengers: Endgame">Avengers: Endgame</option>
+            <option value="Other">Other (Write Movie Name)</option>
+        </select>
+
+        <input type="text" id="movieWrite" class="review-input" placeholder="Enter movie name..."
+            style="display: none;">
+        <textarea id="reviewText" class="review-input" placeholder="Enter your movie review here..."></textarea>
+
+        <button class="submit-button" onclick="analyzeReview()">Analyze Sentiment</button>
+        <div id="result" class="analysis-result" style="display: none;"></div>
+    </section>
+
+    <script>
+        function toggleManualEntry() {
+            let movieSelect = document.getElementById("movieSelect");
+            let movieWrite = document.getElementById("movieWrite");
+
+            if (movieSelect.value === "Other") {
+                movieWrite.style.display = "block";
+            } else {
+                movieWrite.style.display = "none";
+            }
+        }
+
+        async function analyzeReview() {
+            let reviewText = document.getElementById("reviewText").value;
+            let resultDiv = document.getElementById("result");
+
+            if (!reviewText.trim()) {
+                resultDiv.innerHTML = "<p style='color: red;'>Please enter a review.</p>";
+                resultDiv.style.display = "block";
+                return;
+            }
+
+            try {
+                const response = await fetch("http://127.0.0.1:5000/predict", {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ review: reviewText })
+                });
+
+                const data = await response.json();
+
+                const sentiments = ["Very Negative", "Negative", "Neutral", "Positive", "Very Positive"];
+                const sentimentText = sentiments[data.sentiment] || "Unknown";
+                const stars = data.sentiment + 1; // 0→1 star, 4→5 stars
+
+                resultDiv.innerHTML = `<h3>Sentiment Analysis Result</h3>
+                       <p>Sentiment: <strong>${sentimentText}</strong></p>
+                       <p>Predicted Rating: <strong>${'⭐'.repeat(stars)}${'☆'.repeat(5 - stars)}</strong></p>`;
+                resultDiv.style.display = "block";
+
+            } catch (error) {
+                console.error("Error:", error);
+                resultDiv.innerHTML = "<p style='color: red;'>Failed to fetch sentiment. Check console for details.</p>";
+            }
+        }
+    </script>
+</body>
+
+</html>
